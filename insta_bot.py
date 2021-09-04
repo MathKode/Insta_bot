@@ -1,4 +1,4 @@
-from typing import Mapping
+from os import execl
 from selenium.webdriver.common.keys import Keys
 from selenium import webdriver
 import time
@@ -33,22 +33,28 @@ class Bot():
                 name_entry = self.driver.find_element_by_xpath("/html/body/div[1]/section/main/article/div[2]/div[1]/div/form/div/div[1]/div/label/input")
                 pass_entry = self.driver.find_element_by_xpath("/html/body/div[1]/section/main/article/div[2]/div[1]/div/form/div/div[2]/div/label/input")
                 button = self.driver.find_element_by_xpath("/html/body/div[1]/section/main/article/div[2]/div[1]/div/form/div/div[3]")
+                name_entry.send_keys(username)
+                pass_entry.send_keys(password)
+                button.click()
                 click=False
             except :
                 time.sleep(1)
-        name_entry.send_keys(username)
-        pass_entry.send_keys(password)
-        button.click()
+        
     # -----------
 
     # --- Navigate ---
     def go_to(self,profil_name):
-        self._open_bar()
-        self._write_bar(profil_name)
-        elements = self._result_find()
-        name = elements[0].text.split('\n')[0]
-        self._valid(1)
-        self._wait_charging_profile(name)
+        try :
+            n = self.get_profil_name()
+        except :
+            n = ""
+        if n != profil_name:
+            self._open_bar()
+            self._write_bar(profil_name)
+            elements = self._result_find()
+            name = elements[0].text.split('\n')[0]
+            self._valid(1)
+            self._wait_charging_profile(name)
     def find_and_go(self,text_to_search,line_number):
         self._open_bar()
         self._write_bar(text_to_search)
@@ -72,8 +78,14 @@ class Bot():
                 print("Wait Charging site",end="\r")
         print("Site Charged         ")
     def _write_bar(self,message):
-        bar = self.driver.find_element_by_xpath("/html/body/div[1]/section/nav/div[2]/div/div/div[2]/input")
-        bar.send_keys(message)
+        i = True
+        while i:
+            try:
+                bar = self.driver.find_element_by_xpath("/html/body/div[1]/section/nav/div[2]/div/div/div[2]/input")
+                bar.send_keys(message)
+                i = False
+            except:
+                i = True
     def _valid(self,profil_number):
         r = self._result_find()
         if len(r) > profil_number-1:
@@ -100,7 +112,13 @@ class Bot():
         else :
             return elements
     def _close_bar(self):
-        self.driver.find_element_by_xpath("/html/body/div[1]/section/nav/div[2]/div/div/div[2]/div[2]").click()
+        i = True
+        while i:
+            try:
+                self.driver.find_element_by_xpath("/html/body/div[1]/section/nav/div[2]/div/div/div[2]/div[2]").click()
+                i=False
+            except:
+                i=True
     def _wait_charging_profile(self,name):
         i = True
         while i:
@@ -124,7 +142,10 @@ class Bot():
             t = t*1000
         if result==0:
             result=int(stat[1])
-        return result    
+        return result
+    def get_followed_number(self,name):
+        stat = self.get_profil_info(name)
+        return stat[2]
     def get_profil_info(self,name):
         # Get a list like this ['33 470', '3,2m', '160']
         # [publication, followers, followed]
@@ -149,10 +170,20 @@ class Bot():
     def get_follower_list(self,profil_name):
         follower_nb = self.get_follower_number(profil_name)
         self._open_followerlist()
+        ls = self._finish_fonction("/html/body/div[6]/div/div/div[2]",follower_nb)
+        self._close_followerlist()
+        return ls
+    def get_followed_list(self,profil_name):
+        followed_nb = self.get_followed_number(profil_name)
+        self._open_followedlist()
+        ls = self._finish_fonction("/html/body/div[6]/div/div/div[3]",followed_nb)
+        self._close_followedlist()
+        return ls
+    def _finish_fonction(self,path_to_list,follower_nb):
         i = True
         while i:
             try:
-                liste = self.driver.find_element_by_xpath("/html/body/div[6]/div/div/div[2]")
+                liste = self.driver.find_element_by_xpath(str(path_to_list))
                 i = False
             except:
                 i = True
@@ -174,7 +205,6 @@ class Bot():
                 ls.append(str(i.text).split("\n")[0])
             except :
                 print("Erreur with",i,i.text)
-        self._close_followerlist()
         return ls
     def _open_followerlist(self):
         i = True
@@ -192,12 +222,180 @@ class Bot():
                 i = False
             except:
                 i = True
-        
+    def _open_followedlist(self):
+        i = True
+        while i:
+            try :
+                self.driver.find_element_by_xpath("/html/body/div[1]/section/main/div/header/section/ul/li[3]/a").click()
+                i = False
+            except:
+                i = True
+    def _close_followedlist(self):
+        i = True
+        while i:
+            try :
+                self.driver.find_element_by_xpath("/html/body/div[6]/div/div/div[1]/div/div[2]/button").click()
+                i = False
+            except:
+                i = True
+    # --------
 
-        
+    # --- Developpers ---
+    def get_driver(self):
+        return self.driver
+    def url(self):
+        i = True
+        while i:
+            try:
+                url = self.driver.current_url
+                i = False
+            except:
+                i = True
+        return url
+    # --------
 
+    # --- Messages ---
+    def open_message(self):
+        url = self.url()
+        if url != "https://www.instagram.com/direct/inbox/" and len(url.split('direct/t')) == 1:
+            i = True
+            while i:
+                try:
+                    self.driver.find_element_by_xpath("/html/body/div[1]/section/nav/div[2]/div/div/div[3]/div/div[2]/a").click()
+                    i = False
+                except:
+                    i = True
+            i = True
+            while i:
+                try:
+                    self.driver.find_element_by_xpath("/html/body/div[6]/div/div/div/div[3]/button[2]").click()
+                    i = False
+                except:
+                    i = True
+        else:
+            print('Tu es déjà dans la messagerie')
+            i = True
+            t = 0
+            while i:
+                try:
+                    self.driver.find_element_by_xpath("/html/body/div[6]/div/div/div/div[3]/button[2]").click()
+                    i = False
+                except:
+                    i = True
+                    t += 1
+                if t == 100:
+                    i = False
+    def get_conversation_list(self):
+        self.open_message()
+        i = True
+        while i:
+            try:
+                el = self.driver.find_element_by_xpath(f"/html/body/div[1]/section/div/div[2]/div/div/div[1]/div[2]/div/div/div/div/div[1]/a/div/div[2]/div[1]/div/div/div/div")
+                dm = self.driver.find_element_by_xpath("/html/body/div[1]/section/div/div[2]/div/div/div[1]/div[2]/div/div/div")
+                i = False
+            except:
+                i = True
+        ls = []
+        i = True
+        tour = 1
+        wait = 0
+        while i:
+            try :                                                                                                    
+                el = self.driver.find_element_by_xpath(f"/html/body/div[1]/section/div/div[2]/div/div/div[1]/div[2]/div/div/div/div/div[{tour}]/a/div/div[2]/div[1]/div/div/div/div")
+                ls.append(el.text)
+                wait = 0
+                tour += 1
+            except :
+                self.driver.execute_script('arguments[0].scrollBy(0,100)', dm)
+                wait += 1
+            if wait == 500:
+                i = False
+            print(wait,tour,end="\r")
+        return ls
+    def send_to(self,profil_name,message):
+        self.open_message()
+        self._open_messagebar()
+        self._write_messagebar(profil_name)
+        self._validuser_messagebar()
+        self._valid_messagebar()
+        self._write_message(message)
+        self._send()
+    def last_message(self,profil_name):
+        self.open_message()
+        self._open_messagebar()
+        self._write_messagebar(profil_name)
+        self._validuser_messagebar()
+        self._valid_messagebar()
+        time.sleep(1)
+        i = True
+        while i:
+            try:
+                el = self.driver.find_element_by_xpath("/html/body/div[1]/section/div/div[2]/div/div/div[2]/div[2]/div/div[1]/div")
+                i = False
+            except:
+                i = True
+        ls = el.text.split('\n')
+        return ls
 
-b = Bot("faibash.57","bubul2017")
-print(b.get_follower_list("math.k57"))
-print(b.get_follower_list("lun4r_dev"))
-time.sleep(1000)
+    def _open_messagebar(self):
+        i = True
+        while i:
+            try:
+                self.driver.find_element_by_xpath("/html/body/div[1]/section/div/div[2]/div/div/div[1]/div[1]/div/div[3]/button").click()
+                i = False
+            except:
+                i = True
+    def _write_messagebar(self,message): #Mets le nom
+        i = True
+        while i:
+            try:
+                el = self.driver.find_element_by_xpath("/html/body/div[6]/div/div/div[2]/div[1]/div/div[2]/input")
+                el.send_keys(str(message))
+                i = False
+            except:
+                i = True
+    def _validuser_messagebar(self): #Valid l'user
+        i = True
+        while i:
+            try:
+                self.driver.find_element_by_xpath("/html/body/div[6]/div/div/div[2]/div[2]/div[1]/div/div[3]/button").click()
+                i = False
+            except:
+                i = True
+    def _valid_messagebar(self): #Clique sur démarrer une discussion
+        i = True
+        while i:
+            try:
+                self.driver.find_element_by_xpath("/html/body/div[6]/div/div/div[1]/div/div[2]/div/button").click()
+                i = False
+            except:
+                i = True
+    def _write_message(self,message):
+        i = True
+        while i:
+            try:
+                el = self.driver.find_element_by_xpath("/html/body/div[1]/section/div/div[2]/div/div/div[2]/div[2]/div/div[2]/div/div/div[2]/textarea")
+                el.send_keys(message)
+                i = False
+            except:
+                i = True
+    def _send(self):
+        i = True
+        while i:
+            try:
+                self.driver.find_element_by_xpath("/html/body/div[1]/section/div/div[2]/div/div/div[2]/div[2]/div/div[2]/div/div/div[3]/button").click()
+                i = False
+            except:
+                i = True
+
+    # --- Test ---
+    def _Test_Scroll(self):
+        #Ceci est un test de scroll par pixel (ne sert a rien)
+        self.open_message()
+        time.sleep(3)
+        dm = self.driver.find_element_by_xpath("/html/body/div[1]/section/div/div[2]/div/div/div[1]/div[2]/div/div/div")
+        dm = self.driver.find_element_by_xpath("/html/body/div[1]/section/div/div[2]/div/div/div[2]/div[2]/div/div[1]")
+        time.sleep(3)
+        while True:
+            self.driver.execute_script('arguments[0].scrollBy(0,100)', dm)
+    # --------
