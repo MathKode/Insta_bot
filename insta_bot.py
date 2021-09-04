@@ -68,6 +68,7 @@ class Bot():
         for i in elements:
             ls.append(i.text)
         self._close_bar()
+        return ls
     def _open_bar(self):
         i = True
         while i:
