@@ -18,5 +18,7 @@ Cette fonction permet de ce rendre sur la page d'un utilisateur
 - **find_and_go(text_to_search,line_number)**
 
 Cette fonction permet d'écrire un texte dans la bar de recherche et de se rendre au profil qui apparait à la ligne *line_number*
+Par exemple, si vous faite un ***find_and_go("youtube",4)***, ce ira sur le profil : youtubemusic (ligne numéro 4 quand on cherche youtube)
+![](/image/1.png)
 
 
