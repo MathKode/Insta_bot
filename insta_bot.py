@@ -301,18 +301,34 @@ class Bot():
         i = True
         tour = 1
         wait = 0
+        tt = 0
         while i:
             try :                                                                                                    
-                el = self.driver.find_element_by_xpath(f"/html/body/div[1]/section/div/div[2]/div/div/div[1]/div[2]/div/div/div/div/div[{tour}]/a/div/div[2]/div[1]/div/div/div/div")
+                el = self.driver.find_element_by_xpath(f"/html/body/div[1]/section/div/div[2]/div/div/div[1]/div[2]/div/div/div/div/div[{tour-tt}]/a/div/div[2]/div[1]/div/div/div/div")
                 ls.append(el.text)
                 wait = 0
                 tour += 1
             except :
-                self.driver.execute_script('arguments[0].scrollBy(0,100)', dm)
-                wait += 1
-            if wait == 500:
+                try :
+                    self.driver.execute_script('arguments[0].scrollBy(0,100)', dm)
+                    wait += 1
+                except:
+                    m=3
+            if int(wait) == 30:
                 i = False
-            print(wait,tour,end="\r")
+            try :
+                el = self.driver.find_element_by_xpath(f"/html/body/div[1]/section/div/div[2]/div/div/div[1]/div[2]/div/div/div/div/div[1]/a/div/div[2]/div[1]/div/div/div/div")
+                #print(el,tour,ls,end='\r')
+                if el.text in ls:
+                    t = 0
+                    for j in ls:
+                        if j == el.text:
+                            tt = t
+                        t += 1
+            except:
+                m=3
+            time.sleep(0.1)
+            print(wait,tour,tt,end="\r")
         return ls
     def send_to(self,profil_name,message):
         self.open_message()
