@@ -73,6 +73,10 @@ Envoie le message *message* à *profil*.
 
 Récupère les dernier message échangé avec *profil*
 
+- **close()**
+
+Ferme le navigateur
+
 # Info
 
 Ce code fonctionne sans time.sleep : vous n'avez pas à en mettre dans votre code...
