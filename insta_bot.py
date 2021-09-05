@@ -1,4 +1,3 @@
-from os import execl
 from selenium.webdriver.common.keys import Keys
 from selenium import webdriver
 import time
@@ -253,6 +252,8 @@ class Bot():
             except:
                 i = True
         return url
+    def close(self):
+        self.driver.quit()
     # --------
 
     # --- Messages ---
@@ -388,6 +389,7 @@ class Bot():
                 i = False
             except:
                 i = True
+    # --------
 
     # --- Test ---
     def _Test_Scroll(self):
