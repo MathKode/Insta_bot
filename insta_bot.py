@@ -3,9 +3,12 @@ from selenium import webdriver
 import time
 
 class Bot():
-    def __init__(self,username,password):
+    def __init__(self,username,password,path):
         try :
-            self.driver = webdriver.Chrome()
+            if path == "":
+                self.driver = webdriver.Chrome()
+            else :
+                self.driver = webdriver.Chrome(executable_path=path)
             self.driver.get("https://www.instagram.com/")
 
             self._pop_up1()
@@ -179,6 +182,14 @@ class Bot():
         ls = self._finish_fonction("/html/body/div[6]/div/div/div[3]",followed_nb)
         self._close_followedlist()
         return ls
+    def get_profil_state(self,profil_name): #retourn True = public, False = private
+        self.go_to(profil_name)
+        self.get_profil_name()
+        try :
+            self.driver.find_element_by_class_name("rkEop")
+            return False
+        except :
+            return True
     def _finish_fonction(self,path_to_list,follower_nb):
         i = True
         while i:
