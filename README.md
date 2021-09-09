@@ -4,7 +4,7 @@ Ceci est une mini API qui utilise selenium pour intéragir avec instagram et ain
 Pour le faire fonctionner tapper ce qui suit dans votre code :
 ````
 import insta_bot
-mon_bot = insta_bot.Bot("username","password")
+mon_bot = insta_bot.Bot("username","password","/chromedriver")
 `````
 Une fois fait, vous pouvez allez sur un profil avec un 
 ````
@@ -26,7 +26,7 @@ Cette fonction récupère l'ensemble des possibilité de compte quand on tape *t
 
 `````
 import insta_bot
-n = insta_bot.Bot("name","mp")
+n = insta_bot.Bot("name","mp","/chromedriver")
 print(n.find_and_get("youtube"))
 `````
 
