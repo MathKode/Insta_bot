@@ -170,16 +170,18 @@ class Bot():
             return self.driver.find_element_by_xpath("/html/body/div[1]/section/main/div/header/section/div[1]/h2").text
         except:
             return 0 #Quand il n'est pas sur un profil
-    def get_follower_list(self,profil_name):
-        follower_nb = self.get_follower_number(profil_name)
+    def get_follower_list(self,profil_name,end):
+        #follower_nb = self.get_follower_number(profil_name)
+        self.go_to(profil_name)
         self._open_followerlist()
-        ls = self._finish_fonction("/html/body/div[6]/div/div/div[2]",follower_nb)
+        ls = self._finish_fonction("/html/body/div[6]/div/div/div[2]",end)
         self._close_followerlist()
         return ls
-    def get_followed_list(self,profil_name):
-        followed_nb = self.get_followed_number(profil_name)
+    def get_followed_list(self,profil_name,end):
+        #followed_nb = self.get_followed_number(profil_name)
+        self.go_to(profil_name)
         self._open_followedlist()
-        ls = self._finish_fonction("/html/body/div[6]/div/div/div[3]",followed_nb)
+        ls = self._finish_fonction("/html/body/div[6]/div/div/div[3]",end)
         self._close_followedlist()
         return ls
     def get_profil_state(self,profil_name): #retourn True = public, False = private
@@ -190,7 +192,7 @@ class Bot():
             return False
         except :
             return True
-    def _finish_fonction(self,path_to_list,follower_nb):
+    def _finish_fonction(self,path_to_list,end):
         i = True
         while i:
             try:
@@ -199,17 +201,23 @@ class Bot():
             except:
                 i = True
         i = True
+        old=0
+        wait=0
         while i:
             try :
                 elements = self.driver.find_elements_by_class_name("wo9IH")
-                print(len(elements),int(follower_nb)-1,end='\r')
-                if len(elements) >= int(follower_nb)-1:
-                    print(len(elements),int(follower_nb)-1)
-                    i = False
-                else :
-                    self.driver.execute_script('arguments[0].scrollTop = arguments[0].scrollTop + arguments[0].offsetHeight;', liste)
             except:
-                i = True
+                elements=[]
+            if wait >= end*10:
+                i = False
+            if len(elements) != old:
+                wait = 0
+                old = len(elements)
+            else :
+                self.driver.execute_script('arguments[0].scrollTop = arguments[0].scrollTop + arguments[0].offsetHeight;', liste)
+                wait += 1
+                time.sleep(0.1)
+            print(wait,end='\r')
         ls = []
         for i in elements:
             try :
@@ -346,6 +354,16 @@ class Bot():
         self._open_messagebar()
         self._write_messagebar(profil_name)
         self._validuser_messagebar()
+        self._valid_messagebar()
+        self._write_message(message)
+        self._send()
+    def send_to_group(self,groupls,message):
+        self.open_message()
+        self._open_messagebar()
+        for i in groupls:
+            self._write_messagebar(i)
+            self._validuser_messagebar()
+            time.sleep(1)
         self._valid_messagebar()
         self._write_message(message)
         self._send()
